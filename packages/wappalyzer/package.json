@@ -1,6 +1,6 @@
 {
   "name": "@qualweb/wappalyzer",
-  "version": "0.0.1",
+  "version": "0.0.11",
   "description": "Wappalyzer module for qualweb accessibility evaluator",
   "main": "dist/index.js",
   "types": "./node_modules/@qualweb/types",
@@ -22,12 +22,12 @@
   "author": "João Vicente",
   "license": "ISC",
   "devDependencies": {
-    "@qualweb/types": "0.0.12",
-    "@types/htmlparser2": "^3.10.0",
-    "@types/node": "^12.0.10",
-    "typescript": "^3.5.2"
+    "@qualweb/types": "0.0.141",
+    "@types/htmlparser2": "^3.10.1",
+    "@types/node": "^12.6.8",
+    "typescript": "^3.5.3"
   },
   "dependencies": {
-    "wappalyzer": "^5.8.2"
+    "wappalyzer": "^5.8.3"
   }
 }
