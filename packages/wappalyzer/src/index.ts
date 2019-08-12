@@ -24,4 +24,6 @@ async function executeWappalyzer(url: string, options: WappalyzerOptions): Promi
   return report;
 };
 
-export default executeWappalyzer;
+export { 
+  executeWappalyzer
+};
