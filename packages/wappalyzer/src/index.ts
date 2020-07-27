@@ -1,25 +1,11 @@
-'use strict';
-
-import {
-  Application,
-  WappalyzerOptions,
-  WappalyzerReport
-} from '@qualweb/wappalyzer';
-
 import Wappalyzer from 'wappalyzer';
+import { WappalyzerReport } from '@qualweb/wappalyzer';
 
-async function executeWappalyzer(url: string, options: WappalyzerOptions): Promise<WappalyzerReport> {
+async function executeWappalyzer(url: string): Promise<WappalyzerReport> {
   const report: WappalyzerReport = {
+    type: 'wappalyzer',
     result: await new Wappalyzer(url).analyze()
   };
-
-  report.result.applications.map((app: Application) => {
-    if (options && options.cms) {
-      return app;
-    }
-
-    return app;
-  });
 
   return report;
 };
