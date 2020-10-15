@@ -2,25 +2,9 @@
 
 [Wappalyzer](https://www.wappalyzer.com/) module for QualWeb.
 
-## How to install
-
-```shell
-  $ npm i @qualweb/wappalyzer --save
-```
-
 ## How to run
 
-```javascript
-  'use strict';
-
-  const { executeWappalyzer } = require('@qualweb/wappalyzer');
-
-  (async () => {
-    const report = await executeWappalyzer('https://act-rules.github.io/pages/about/');
-
-    console.log(report);
-  })();
-```
+**This is an internal module of QualWeb. To use it check either [@qualweb/cli](https://github.com/qualweb/cli) or [@qualweb/core](https://github.com/qualweb/core).**
 
 # License
 
