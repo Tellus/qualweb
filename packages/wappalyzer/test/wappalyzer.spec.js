@@ -1,10 +1,10 @@
-const { executeWappalyzer } = require('../dist/index');
-const { expect } = require('chai');
+import { executeWappalyzer } from '../dist/index';
+import { expect } from 'chai';
 
 const URL = 'https://ciencias.ulisboa.pt/';
 
 describe('Wappalyzer', function() {
-  it('should execute', async function() {
+  it('Should execute', async function() {
     this.timeout(0);
 
     const results = await executeWappalyzer(URL);

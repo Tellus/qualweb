@@ -14,8 +14,6 @@ async function executeWappalyzer(url: string): Promise<WappalyzerReport> {
   await wappalyzer.destroy();
 
   return report;
-};
+}
 
-export { 
-  executeWappalyzer
-};
+export { executeWappalyzer };
