@@ -1,0 +1,60 @@
+{
+  "name": "@qualweb/wappalyzer",
+  "version": "0.3.2",
+  "description": "Wappalyzer module for qualweb accessibility evaluator",
+  "main": "dist/index.js",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "tsc": "tsc",
+    "test": "mocha --require esm",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "prebuild": "rimraf dist",
+    "build": "npm run format && npm run lint && npm run prebuild && tsc --build",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "a11y",
+    "accessibility",
+    "wappalyzer",
+    "qualweb",
+    "evaluator"
+  ],
+  "homepage": "https://github.com/qualweb/wappalyzer#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qualweb/wappalyzer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/qualweb/wappalyzer/issues",
+    "email": "qualweb@fc.ul.pt"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "author": "João Vicente",
+  "license": "ISC",
+  "devDependencies": {
+    "@qualweb/types": "0.7.16",
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/node": "^16.11.12",
+    "@typescript-eslint/eslint-plugin": "^5.6.0",
+    "@typescript-eslint/parser": "^5.6.0",
+    "chai": "^4.3.4",
+    "eslint": "^8.4.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-sonarjs": "^0.11.0",
+    "esm": "^3.2.25",
+    "mocha": "^9.1.3",
+    "prettier": "^2.5.1",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.5.3"
+  },
+  "dependencies": {
+    "wappalyzer": "^6.9.8"
+  }
+}
