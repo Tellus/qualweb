@@ -1,0 +1,27 @@
+{
+  "name": "@qualweb/types",
+  "version": "0.7.16",
+  "description": "Type definitions for qualweb ecosystem",
+  "main": "./index.d.ts",
+  "keywords": [
+    "qualweb",
+    "types"
+  ],
+  "homepage": "https://github.com/qualweb/types#readme",
+  "bugs": {
+    "url": "https://github.com/qualweb/types/issues",
+    "email": "qualweb@fc.ul.pt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qualweb/types.git"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "author": "João Afonso Vicente",
+  "license": "ISC",
+  "dependencies": {
+    "@types/puppeteer": "5.4.3"
+  }
+}
