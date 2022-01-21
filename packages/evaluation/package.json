@@ -34,9 +34,9 @@
   "author": "João Vicente",
   "license": "ISC",
   "devDependencies": {
-    "@qualweb/dom": "0.2.5",
-    "@qualweb/locale": "0.1.10",
-    "@qualweb/types": "0.7.16",
+    "@qualweb/dom": "workspace:*",
+    "@qualweb/locale": "workspace:*",
+    "@qualweb/types": "workspace:*",
     "@tsconfig/recommended": "^1.0.1",
     "@types/node": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
@@ -54,12 +54,12 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "@qualweb/act-rules": "0.6.7",
-    "@qualweb/best-practices": "0.6.6",
-    "@qualweb/counter": "0.2.0",
-    "@qualweb/qw-page": "0.2.12",
-    "@qualweb/util": "0.5.13",
-    "@qualweb/wappalyzer": "0.3.2",
-    "@qualweb/wcag-techniques": "0.3.4"
+    "@qualweb/act-rules": "workspace:*",
+    "@qualweb/best-practices": "workspace:*",
+    "@qualweb/counter": "workspace:*",
+    "@qualweb/qw-page": "workspace:*",
+    "@qualweb/util": "workspace:*",
+    "@qualweb/wappalyzer": "workspace:*",
+    "@qualweb/wcag-techniques": "workspace:*"
   }
 }

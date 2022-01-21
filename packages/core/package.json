@@ -67,11 +67,11 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@qualweb/crawler": "0.3.12",
-    "@qualweb/dom": "0.2.5",
-    "@qualweb/earl-reporter": "0.4.1",
-    "@qualweb/evaluation": "0.3.10",
-    "@qualweb/locale": "0.1.10",
+    "@qualweb/crawler": "workspace:*",
+    "@qualweb/dom": "workspace:*",
+    "@qualweb/earl-reporter": "workspace:*",
+    "@qualweb/evaluation": "workspace:*",
+    "@qualweb/locale": "workspace:*",
     "colors": "^1.4.0",
     "puppeteer": "^10.4.0",
     "puppeteer-cluster3": "^1.0.0",
@@ -80,7 +80,7 @@
     "puppeteer-extra-plugin-stealth": "^2.9.0"
   },
   "devDependencies": {
-    "@qualweb/types": "0.7.16",
+    "@qualweb/types": "workspace:*",
     "@tsconfig/recommended": "^1.0.1",
     "@types/node": "^17.0.8",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
