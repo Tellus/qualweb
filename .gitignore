@@ -1,0 +1,15 @@
+node_modules/
+
+# Rebuilt by TS.
+dist
+src/src_dist
+
+.pnpm-debug.log
+
+*.tsbuildinfo
+
+# Ignore archives.
+.zip
+.7z
+.tgz
+.tar.gz
