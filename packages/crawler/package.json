@@ -41,8 +41,11 @@
     "log-update": "4.0.0"
   },
   "devDependencies": {
+    "@mocks-server/main": "^4.1.0",
     "@qualweb/types": "0.7.25",
     "@tsconfig/recommended": "^1.0.3",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^16.11.2",
     "chai": "^5.0.0",
     "eslint": "^8.56.0",
