@@ -3,20 +3,20 @@ import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { expect } from 'chai';
 
-describe('Url crawling', function () {
-  it('should have more than 1 urls', async function () {
-    this.timeout(0);
+// describe('Url crawling', function () {
+//   it('should have more than 1 urls', async function () {
+//     this.timeout(0);
 
-    puppeteer.use(StealthPlugin());
+//     puppeteer.use(StealthPlugin());
 
-    const browser = await puppeteer.launch({headless:false});
-    const crawler = new Crawler(browser, 'http://www.cm-gois.pt');
-    await crawler.crawl({ logging: false, maxDepth: 0 });
-    const urls = crawler.getResults();
-    console.log(urls);
+//     const browser = await puppeteer.launch({headless:false});
+//     const crawler = new Crawler(browser, 'http://www.cm-gois.pt');
+//     await crawler.crawl({ logging: false, maxDepth: 0 });
+//     const urls = crawler.getResults();
+//     console.log(urls);
 
-    //await browser.close();
+//     //await browser.close();
 
-    expect(urls.length).to.be.greaterThan(1);
-  });
-});
+//     expect(urls.length).to.be.greaterThan(1);
+//   });
+// });

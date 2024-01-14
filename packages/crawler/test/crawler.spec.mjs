@@ -1,53 +1,92 @@
-import { Crawler } from '../dist/index.js';
-import puppeteer from 'puppeteer';
 import { expect } from 'chai';
-
 import { createServer } from '@mocks-server/main';
 
-describe('@qualweb/crawler', () => {
-  let browser;
-  let mockServer;
+import { Crawler } from '../dist/index.js';
+import { usePuppeteer, useMockServer } from './util.mjs';
+
+describe('General tests', () => {
+  let mockServerCore;
 
   before(async () => {
-    browser = await puppeteer.launch({
-      headless: false,
+    mockServerCore = createServer({
+      log: 'silent',
     });
 
-    mockServer = createServer({
-      config: {
-        readArguments: true,
-        readEnvironment: true,
-        readFile: true,
-      },
-      // plugins: {
-      //   inquirerCli: {
-      //     enabled: true,
-      //   },
-      // },
-      files: {
-        enabled: true,
-      },
-      // mock: {
-      //   collections: {
-      //     selected: 'link-chain',
-      //   },
-      // },
-    });
+    await mockServerCore.init();
 
-    mockServer.start();
+    const { loadRoutes, loadCollections } = mockServerCore.mock.createLoaders();
+
+    await loadRoutes([
+      {
+        id: 'base-link',
+        url: '/',
+        method: ['GET'],
+        variants: [
+          {
+            id: 'base',
+            type: 'text',
+            options: {
+              status: 200,
+              headers: {
+                'Content-Type': 'text/html; charset=utf-8',
+              },
+              body: '<html><head></head><body><a href="/loop/10/0">Initial link!</a></body></html>',
+            },
+          },
+        ],
+      },
+      {
+        id: 'deep-link',
+        url: '/loop/10/7/',
+        method: ['GET'],
+        variants: [
+          {
+            id: 'base',
+            type: 'text',
+            options: {
+              status: 200,
+              headers: {
+                'Content-Type': 'text/html; charset=utf-8',
+              },
+              body: '<html><head></head><body><a href="/loop/10/0">Initial link!</a></body></html>',
+            },
+          },
+        ],
+      },
+    ]);
+
+    await loadCollections([
+      {
+        "id": "infinite-links",
+        "routes": [
+          "deep-link:base",
+        ]
+      },
+    ]);
+
+    await mockServerCore.start();
   });
 
-  // it('Should do fuck all', () => {
-  //   const t = 2 + 2;
-  //   expect(t).to.equal(4);
-  // });
+  after(async () => {
+    await mockServerCore.stop();
+  })
 
-  it('Should navigate to a mocked HTML page', async () => {
-    const page = await browser.newPage();
+  const proxy = usePuppeteer();
+  // const mockServerProxy = useMockServer('infinite-links');
 
-    await page.goto('http://localhost:3100');
+  it('Should refuse to start a crawl from a link that is not at the root of the domain', async () => {
+    // const startingUrl = `${mockServerProxy.mockServer.server.url}/loop/10/7/`;
+    const startingUrl = `${mockServerCore.server.url}/loop/10/7/`;
 
+    const c = new Crawler(proxy.browser, startingUrl);
 
+    await c.crawl();
+
+    const results = c.getResults();
+
+    expect(results).to.have.length(1);
+
+    expect(results[0]).to.equal(startingUrl);
   });
 });
 
@@ -60,42 +99,6 @@ describe('@qualweb/crawler', () => {
 
 //   after(async function () {
 //     await browser.close();
-//   });
-
-//   it('maxDepth: 0', async function () {
-//     this.timeout(0);
-//     const crawler = new Crawler(browser, 'https://ciencias.ulisboa.pt');
-//     await crawler.crawl({ logging: true, maxDepth: 0 });
-//     const urls = crawler.getResults();
-//     console.log(urls.length);
-//     expect(urls.length).to.be.greaterThan(1);
-//   });
-
-//   it('maxDepth: 1', async function () {
-//     this.timeout(0);
-//     const crawler = new Crawler(browser, 'https://ciencias.ulisboa.pt');
-//     await crawler.crawl({ logging: true, maxDepth: 1 });
-//     const urls = crawler.getResults();
-//     console.log(urls.length);
-//     expect(urls.length).to.be.greaterThan(1);
-//   });
-
-//   it('maxUrls: 10', async function () {
-//     this.timeout(0);
-//     const crawler = new Crawler(browser, 'https://ciencias.ulisboa.pt');
-//     await crawler.crawl({ logging: true, maxUrls: 10 });
-//     const urls = crawler.getResults();
-//     console.log(urls.length);
-//     expect(urls.length).to.be.greaterThan(1);
-//   });
-
-//   it('MaxUrls: 100', async function () {
-//     this.timeout(0);
-//     const crawler = new Crawler(browser, 'https://ciencias.ulisboa.pt');
-//     await crawler.crawl({ logging: true, maxUrls: 100 });
-//     const urls = crawler.getResults();
-//     console.log(urls.length);
-//     expect(urls.length).to.be.greaterThan(1);
 //   });
 
 //   it('Timeout: 20 seconds', async function () {

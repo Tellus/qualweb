@@ -1,7 +1,7 @@
 module.exports = {
   "color": true,
   "ui": "bdd",
-  "spec": "test/**/crawler.spec.mjs",
+  "spec": "test/**/*.spec.mjs",
   // Uncomment to get a JSON file with test results instead of output in console.
   // "reporter": "json",
   // "reporterOptions": [

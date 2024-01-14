@@ -4,6 +4,21 @@
     "routes": ["add-headers:enabled", "get-users:success", "get-user:success"]
   },
   {
+    "id": "infinite-links",
+    "routes": [
+      "infinite-links:base",
+      "base-link:base",
+      "infinite-tree:base"
+    ]
+  },
+  {
+    "id": "depth",
+    "routes": [
+      "infinite-tree-root:base",
+      "infinite-tree:base"
+    ]
+  },
+  {
     "id": "no-headers",
     "from": "base",
     "routes": ["add-headers:disabled"]
