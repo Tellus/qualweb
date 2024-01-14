@@ -43,7 +43,7 @@ export function usePuppeteer(launchOptions) {
  * @returns A faux proxy object, with fields that are set and deleted before and
  * after all tests within the suite where {@link useMockServer} was used.
  */
-export function useMockServer(collection) {
+export function useMockServer({ collection, skipTeardown }) {
 
   let mockServerProxyObject = {
     mockServer: null,
@@ -70,9 +70,11 @@ export function useMockServer(collection) {
     await mockServerProxyObject.mockServer.start();
   });
 
-  after(async () => {
-    await mockServerProxyObject.mockServer.stop();
-  });
+  if (skipTeardown !== true) {
+    after(async () => {
+      await mockServerProxyObject.mockServer.stop();
+    });
+  }
 
   return mockServerProxyObject;
 }

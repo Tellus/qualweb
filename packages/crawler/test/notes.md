@@ -31,7 +31,7 @@ won't work.
 
 Similar libraries that I checked out:
 - [Mock Service Worker](https://github.com/mswjs/msw)
-- 
+- ... that's it
 
 ## Option 3: mock web servers
 

@@ -4,7 +4,10 @@ import { Crawler } from '../dist/index.js';
 import { usePuppeteer, useMockServer } from './util.mjs';
 
 describe('Limit tests', () => {
-  const mockServerProxy = useMockServer('infinite-links');
+  const mockServerProxy = useMockServer({
+    collection: 'infinite-links',
+  });
+  
   const proxy = usePuppeteer();
 
   it('Should follow a chain of links until there are no more (maxUrls: default value / undefined)', async function () {
