@@ -1,18 +1,11 @@
-import fetch from 'node-fetch';
 import { Dom } from '@qualweb/dom';
 import { expect } from 'chai';
 import locales from '@qualweb/locale';
-import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath, URL } from 'node:url';
+import { fileURLToPath, URL, pathToFileURL } from 'node:url';
 import { createRequire } from 'module';
-import { launchBrowser } from './util.mjs';
+import { createStaticFileServer, launchBrowser } from './util.mjs';
 const require = createRequire(import.meta.url);
-
-async function getTestCases() {
-  const response = await fetch('https://www.w3.org/WAI/content-assets/wcag-act-rules/testcases.json');
-  return await response.json();
-}
 
 const mapping = {
   'QW-ACT-R1': '2779a5',
@@ -85,13 +78,19 @@ const mapping = {
   'QW-ACT-R76': '09o5cg'
 };
 
+import actTestCases from './fixtures/w3c-repo/content-assets/wcag-act-rules/testcases.json' assert { type: 'json' };
+
 // If a single QW-ACT-R?? was passed as an argument, run just that test.
 // Otherwise, run all tests.
-const rulesToTest = Object.keys(mapping);
+const rulesToTest = process.env.QW_TEST_ACT_RULES
+  ? process.env.QW_TEST_ACT_RULES.split(',')
+  : Object.keys(mapping);
+
+if (process.env.QW_TEST_ACT_RULES) {
+  console.debug(`Only testing the following rules: ${process.env.QW_TEST_ACT_RULES}`);
+}
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-
-const actTestCases = JSON.parse(readFileSync(resolve(__dirname, 'fixtures/testcases.json')));
 
 const PASSED = 'passed';
 const FAILED = 'failed';
@@ -107,6 +106,8 @@ const consistencyMapping = {
 describe('ACT rules', () => {
   let browser = null;
   let incognito = null;
+  let staticFileServer = createStaticFileServer();
+  let staticFileUrl;
 
   before(async () => {
     // Fire up Puppeteer before any test runs. All tests should be running in
@@ -115,6 +116,17 @@ describe('ACT rules', () => {
     browser = await launchBrowser();
 
     incognito = await browser.createIncognitoBrowserContext();
+
+    // Fire up the static file server.
+    staticFileServer.listen(() => {
+      const addr = staticFileServer.address();
+
+      if (typeof addr === 'string') {
+        staticFileUrl = addr;
+      } else {
+        staticFileUrl = `http://localhost:${addr.port}`;
+      }
+    });
   });
 
   for (const ruleToTest of rulesToTest) {
@@ -130,6 +142,7 @@ describe('ACT rules', () => {
           title: t.testcaseTitle,
           url: t.url,
           outcome: t.expected,
+          relativePath: t.relativePath,
         };
       });
 
@@ -140,6 +153,7 @@ describe('ACT rules', () => {
           const page = await incognito.newPage();
           try {
             const dom = new Dom(page);
+
             const { sourceHtmlHeadContent } = await dom.process(
               {
                 execute: { act: true },
@@ -148,8 +162,8 @@ describe('ACT rules', () => {
                 },
                 waitUntil: ruleToTest === 'QW-ACT-R4' || ruleToTest === 'QW-ACT-R71' ? ['load', 'networkidle0'] : 'load'
               },
-              test.url,
-              ''
+              // `${staticFileUrl}/${test.relativePath}`,
+              test.url.replace('https://www.w3.org', staticFileUrl),
             );
 
             await page.addScriptTag({
@@ -212,9 +226,14 @@ describe('ACT rules', () => {
               : CANTTELL;
 
             expect(outcome).to.be.oneOf(consistencyMapping[test.outcome]);
+
+            if (process.env?.TEST_PUPPETEER_HEADLESS === 'false') {
+              // Wait for visual.
+              await new Promise(r => setTimeout(r, 10000));
+            }
           } finally {
             // Pages should *always* close after the test.
-              await page.close();
+            await page.close();
           }
         });
       }
@@ -229,5 +248,7 @@ describe('ACT rules', () => {
     if (browser) {
       await browser.close();
     }
+
+    staticFileServer.close();
   });
 });
