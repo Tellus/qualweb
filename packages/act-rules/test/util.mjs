@@ -83,12 +83,12 @@ export function createStaticFileServer() {
   
       response.writeHead(200, headers);
   
-      let fileContents = fs.readFileSync(filePath, 'utf-8');
+      let fileContents = fs.readFileSync(filePath);
   
       // Convert any URLs to w3c.org into absolute paths.
-      fileContents = fileContents.replaceAll('https://www.w3.org', '');
-  
-      response.end(fileContents, 'utf-8');
+      // fileContents = fileContents.replaceAll('https://www.w3.org', '');
+
+      response.end(fileContents);
     } catch (err) {
       if (!fs.existsSync(filePath)) {
         response.writeHead(404);
