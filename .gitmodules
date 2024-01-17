@@ -1,0 +1,3 @@
+[submodule "packages/act-rules/test/fixtures/w3c-repo"]
+	path = packages/act-rules/test/fixtures/w3c-repo
+	url = https://github.com/w3c/wcag-act-rules
