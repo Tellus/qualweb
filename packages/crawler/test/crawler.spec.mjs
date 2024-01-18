@@ -2,87 +2,34 @@ import { expect } from 'chai';
 import { createServer } from '@mocks-server/main';
 
 import { Crawler } from '../dist/index.js';
-import { usePuppeteer, useMockServer } from './util.mjs';
+import { usePuppeteer, useMockServer, createKoaServer } from './util.mjs';
 
 describe('General tests', () => {
-  let mockServerCore;
+  let mockHttpApplication;
+  let mockHttpServer;
+  let mockHttpServerHost;
 
   before(async () => {
-    mockServerCore = createServer({
-      log: 'silent',
-    });
+    mockHttpApplication = createKoaServer();
 
-    await mockServerCore.init();
+    mockHttpServer = mockHttpApplication.listen();
 
-    const { loadRoutes, loadCollections } = mockServerCore.mock.createLoaders();
-
-    await loadRoutes([
-      {
-        id: 'base-link',
-        url: '/',
-        method: ['GET'],
-        variants: [
-          {
-            id: 'base',
-            type: 'text',
-            options: {
-              status: 200,
-              headers: {
-                'Content-Type': 'text/html; charset=utf-8',
-              },
-              body: '<html><head></head><body><a href="/loop/10/0">Initial link!</a></body></html>',
-            },
-          },
-        ],
-      },
-      {
-        id: 'deep-link',
-        url: '/loop/10/7/',
-        method: ['GET'],
-        variants: [
-          {
-            id: 'base',
-            type: 'text',
-            options: {
-              status: 200,
-              headers: {
-                'Content-Type': 'text/html; charset=utf-8',
-              },
-              body: '<html><head></head><body><a href="/loop/10/0">Initial link!</a></body></html>',
-            },
-          },
-        ],
-      },
-    ]);
-
-    await loadCollections([
-      {
-        "id": "infinite-links",
-        "routes": [
-          "deep-link:base",
-        ]
-      },
-    ]);
-
-    await mockServerCore.start();
+    mockHttpServerHost = `http://localhost:${mockHttpServer.address().port}`;
   });
 
-  after(async () => {
-    await mockServerCore.stop();
-  })
-
   const proxy = usePuppeteer();
-  // const mockServerProxy = useMockServer('infinite-links');
 
   it('Should refuse to start a crawl from a link that is not at the root of the domain', async () => {
     // const startingUrl = `${mockServerProxy.mockServer.server.url}/loop/10/7/`;
-    const startingUrl = `${mockServerCore.server.url}/loop/10/7/`;
+    const startingUrl = `${mockHttpServerHost}/10/7/`;
 
     const c = new Crawler(proxy.browser, startingUrl);
 
     await c.crawl();
 
     const results = c.getResults();
+
+    console.debug(results);
 
     expect(results).to.have.length(1);
 

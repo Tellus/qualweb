@@ -1,6 +1,9 @@
 import puppeteer from 'puppeteer';
 import { createServer } from '@mocks-server/main';
 
+import Koa from 'koa';
+import Router from '@koa/router';
+
 /**
  * Sets up a proxy object that will be populated with browser object, incognito
  * context, and page object before a unit test runs.
@@ -78,3 +81,76 @@ export function useMockServer({ collection, skipTeardown }) {
 
   return mockServerProxyObject;
 }
+
+export function createKoaServer({ childLinksPerPage = 3, maxDepth = 10 } = {}) {
+  const app = new Koa();
+
+  const router = new Router();
+
+  router.get('(/[^\/]+)*', (ctx, next) => {
+
+    const parms = ctx.params[0];
+      
+    const pathSegments = parms
+      ? parms.split('/').filter(segment => segment?.length > 0)
+      : []
+      ;
+
+    // Calculating a leaf "offset" means that every path down through the virtual
+    // tree will be unique. Without this (using just a simple iterator for leaf ids)
+    // would mean that every level had the exact same children.
+    // The difference is linear vs exponential URL-space.
+    const leafOffset = pathSegments
+      .map(segment => Number.parseInt(segment))
+      .filter(segment => segment != NaN)
+      .reduce((prev, current) => prev + current, 0);
+
+    const parentLink = parms
+      ? `<div>
+      <a href="/${pathSegments.slice(0, -1).join('/')}">Parent</a>
+    </div>`
+      : ''
+      ;
+
+    const childLinks = [];
+
+    for (let i = 0; i < childLinksPerPage; i++) {
+      childLinks.push(`<li><a href="${(parms || '') + '/' + (i + leafOffset) }">Child #${i}</a></li>`);
+    }
+
+    ctx.status = 200;
+    ctx.body = `<html>
+      <head></head>
+      <body>
+        <div>
+          <a href="/">Front page</a>
+        </div>
+        ${parentLink}
+        <div>
+          <ul>
+            ${childLinks.join('\n')}
+          </ul>
+        </div>
+      </body>
+    </html>`;
+
+    return next();
+
+    // ctx.status = 200;
+    // ctx.body = `I saw: ${JSON.stringify(ctx.params[0]?.split('/'))}`;
+  });
+
+  app.use(router.routes())
+    .use(router.allowedMethods())
+    ;
+
+  return app;
+}
+
+// const a = createKoaServer({
+//   childLinksPerPage: 10,
+//   maxDepth: 3,
+// });
+
+// const server = a.listen(8081);
+// console.debug(server.address());
