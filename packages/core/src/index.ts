@@ -223,7 +223,7 @@ class QualWeb {
       // If cmpManager is defined (not null), it's because we set up some
       // descriptors we want to run.
       if (cmpManager !== null) {
-        const cmpResult = await cmpManager.parsePage(page, {
+        await cmpManager.parsePage(page, {
           failOnMissing: true,
         });
       }
@@ -249,6 +249,15 @@ class QualWeb {
     }
 
     await this.cluster?.idle();
+
+    // Once evaluation has finished, remove any temporary descriptors from the
+    // CMPManager instance.
+
+    if (cmpManager !== null && tmpDescriptorNames.length > 0) {
+      for (const tmpDescriptorName of tmpDescriptorNames) {
+        cmpManager.removeDescriptor(tmpDescriptorName);
+      }
+    }
 
     if (options.log?.file) {
       if (foundError) {
