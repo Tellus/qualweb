@@ -12,6 +12,27 @@ import locales, { Lang, Locale, TranslationObject } from '@qualweb/locale';
 import { readFile, writeFile, unlink } from 'fs';
 import path from 'path';
 import 'colors';
+import { CMPManager, SimpleCMPDescriptor } from '@inqludeit/cmp-b-gone';
+
+/**
+ * Additional options that can be passed to {@link QualWeb.start}.
+ */
+export interface QualWebStartOptions {
+  /**
+   * If true, a default CMPManager from cmp-b-gone will be instantiate with all
+   * currently known CMP descriptors. cmp-b-gone has a large (but not
+   * comprehensive) collection of konwn descriptors that may catch cookie
+   * banners on pages you are loading.
+   * If you need to add specific descriptors not present in the default
+   * collection, consider either using cmp-b-gone directly or add specific CMP
+   * details in your call to {@link QualWeb.evaluate}.
+   * 
+   * Note that using all built in descriptors is *much* slower than specifying
+   * them in {@link QualWeb.evaluate} because the correct descriptor has to be
+   * identified.
+   */
+  useBuiltInCmpSuppression?: boolean,
+}
 
 /**
  * QualWeb engine - Performs web accessibility evaluations using several modules:
@@ -29,6 +50,8 @@ class QualWeb {
    * Array of plugins added with QualWeb.use().
    */
   private qualwebPlugins: QualwebPlugin[] = [];
+
+  private cmpManager?: CMPManager;
 
   /**
    * Initializes puppeteer with given plugins.
@@ -52,7 +75,8 @@ class QualWeb {
    */
   public async start(
     clusterOptions?: ClusterOptions,
-    puppeteerOptions?: LaunchOptions & BrowserLaunchArgumentOptions & BrowserConnectOptions
+    puppeteerOptions?: LaunchOptions & BrowserLaunchArgumentOptions & BrowserConnectOptions,
+    additionalOptions?: QualWebStartOptions,
   ): Promise<void> {
     this.cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -62,6 +86,11 @@ class QualWeb {
       timeout: clusterOptions?.timeout ?? 60 * 1000,
       monitor: clusterOptions?.monitor ?? false
     });
+
+    // If requested, set up a CMPManager using all built-in descriptors.
+    if (additionalOptions?.useBuiltInCmpSuppression === true) {
+      this.cmpManager = await CMPManager.createManager(undefined, true);
+    }
   }
 
   /**
@@ -114,6 +143,49 @@ class QualWeb {
       modulesToExecute.counter = !!options.execute.counter;
     }
 
+    // Depending on whether we initialized a cmpManager during start()
+    // (indicating that we want to use built-ins as well) or not, we either
+    // create an ad hoc instance or use the one already in this QualWeb object.
+
+    // Array of descriptor names. We use this to keep track of the temporary
+    // descriptors we may have created, so they can be removed again after
+    // evaluation.
+    let tmpDescriptorNames: string[] = [];
+
+    // Local reference to whichever CMPManager should be used during evaluation.
+    // This will either be the QualWeb object's version (which persists between
+    // evaluate() calls), a temporary version for this call of evaluate(), or
+    // null (in case of no CMP dismissal).
+
+    let cmpManager: CMPManager | null = null;
+
+    if (this.cmpManager || options.cmpDescriptors?.length > 0) {
+      const cmpManager = this.cmpManager || await CMPManager.createManager(undefined, false);
+
+      // If the caller added temporary descriptors via options, add them to the
+      // CMPManager instance. We give them some names that are unlikely to
+      // clash with others already present, and so they can be removed after
+      // evaluation has run.
+      if (options.cmpDescriptors?.length > 0) {
+        let descriptorNameCounter = 0;
+
+        for (const tmpDescriptor of options.cmpDescriptors) {
+          const tmpDescriptorName = `__TMP_DESCRIPTOR_${descriptorNameCounter++}`;
+
+          cmpManager.addDescriptors([
+            new SimpleCMPDescriptor(
+              tmpDescriptorName,
+              tmpDescriptor.storageOptions,
+              tmpDescriptor.presenceSelectors,
+              tmpDescriptor.acceptAllSelectors,
+            ),
+          ]);
+
+          tmpDescriptorNames.push(tmpDescriptorName);
+        }
+      }
+    }
+
     const evaluations: Evaluations = {};
 
     let foundError = false;
@@ -146,6 +218,15 @@ class QualWeb {
 
       const { sourceHtml, validation } = await dom.process(options, url ?? '', html ?? '');
       const evaluation = new Evaluation(url, page, modulesToExecute);
+
+      // Run built-in CMP dismissal before any other plugin.
+      // If cmpManager is defined (not null), it's because we set up some
+      // descriptors we want to run.
+      if (cmpManager !== null) {
+        const cmpResult = await cmpManager.parsePage(page, {
+          failOnMissing: true,
+        });
+      }
 
       // Execute afterPageLoad on all plugins in order. Same assumptions for
       // exceptions apply as they did for beforePageLoad.

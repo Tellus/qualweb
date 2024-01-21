@@ -1,3 +1,5 @@
+import { SimpleCMPDescriptor } from '@inqludeit/cmp-b-gone';
+
 declare module "@qualweb/core" {
   import { WCAGOptions, WCAGTechniquesReport } from "@qualweb/wcag-techniques";
   import { DomData } from "@qualweb/dom";
@@ -81,6 +83,10 @@ declare module "@qualweb/core" {
     "act-rules"?: ACTROptions;
     "wcag-techniques"?: WCAGOptions;
     "best-practices"?: BPOptions;
+    cmpDescriptors: (Pick<
+      SimpleCMPDescriptor,
+      'acceptAllSelectors' | 'consentKeys' | 'presenceSelectors' | 'cmpTimeout'
+    > & { storageOptions: LocalStorageConsentStorageOptions | CookieConsentStorageOptions })[];
   }
 
   interface Evaluator {

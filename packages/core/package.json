@@ -68,6 +68,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "@inqludeit/cmp-b-gone": "^0.1.0",
     "@qualweb/crawler": "0.3.18",
     "@qualweb/dom": "0.2.9",
     "@qualweb/earl-reporter": "0.4.6",
