@@ -31,6 +31,6 @@
     "puppeteer_skip_chromium_download": true
   },
   "devDependencies": {
-    "@inqludeit/cmp-b-gone": "^0.1.0"
+    "@inqludeit/cmp-b-gone": "^0.2.1"
   }
 }

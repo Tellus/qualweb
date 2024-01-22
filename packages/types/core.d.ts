@@ -1,5 +1,3 @@
-import { SimpleCMPDescriptor } from '@inqludeit/cmp-b-gone';
-
 declare module "@qualweb/core" {
   import { WCAGOptions, WCAGTechniquesReport } from "@qualweb/wcag-techniques";
   import { DomData } from "@qualweb/dom";
@@ -17,6 +15,7 @@ declare module "@qualweb/core" {
   } from "puppeteer";
   import { CounterReport } from "@qualweb/counter";
   import { Locale, Lang, TranslationObject } from "@qualweb/locale";
+  import { SimpleCMPDescriptor, CookieConsentStorageOptions, LocalStorageConsentStorageOptions } from '@inqludeit/cmp-b-gone';
 
   interface Execute {
     wappalyzer?: boolean;
@@ -59,6 +58,26 @@ declare module "@qualweb/core" {
     afterPageLoad?: PageCallback;
   }
 
+  /**
+   * Additional options that can be passed to {@link QualWeb.start}.
+   */
+  export interface QualWebStartOptions {
+    /**
+     * If true, a default CMPManager from cmp-b-gone will be instantiate with all
+     * currently known CMP descriptors. cmp-b-gone has a large (but not
+     * comprehensive) collection of konwn descriptors that may catch cookie
+     * banners on pages you are loading.
+     * If you need to add specific descriptors not present in the default
+     * collection, consider either using cmp-b-gone directly or add specific CMP
+     * details in your call to {@link QualWeb.evaluate}.
+     * 
+     * Note that using all built in descriptors is *much* slower than specifying
+     * them in {@link QualWeb.evaluate} because the correct descriptor has to be
+     * identified.
+     */
+    useBuiltInCmpSuppression?: boolean,
+  }
+  
   interface QualwebOptions {
     url?: string;
     urls?: string[];
@@ -83,7 +102,7 @@ declare module "@qualweb/core" {
     "act-rules"?: ACTROptions;
     "wcag-techniques"?: WCAGOptions;
     "best-practices"?: BPOptions;
-    cmpDescriptors: (Pick<
+    cmpDescriptors?: (Pick<
       SimpleCMPDescriptor,
       'acceptAllSelectors' | 'consentKeys' | 'presenceSelectors' | 'cmpTimeout'
     > & { storageOptions: LocalStorageConsentStorageOptions | CookieConsentStorageOptions })[];
@@ -205,7 +224,8 @@ declare module "@qualweb/core" {
       clusterOptions?: ClusterOptions,
       puppeteerOptions?: LaunchOptions &
         BrowserLaunchArgumentOptions &
-        BrowserConnectOptions
+        BrowserConnectOptions,
+      additionalOptions?: QualWebStartOptions,
     ): Promise<void>;
 
     public use(plugin: QualwebPlugin): this;

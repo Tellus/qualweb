@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer-extra';
 import { Cluster } from 'puppeteer-cluster';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import AdBlocker from 'puppeteer-extra-plugin-adblocker';
-import { QualwebOptions, Evaluations, PuppeteerPlugins, ClusterOptions, LoadEvent, QualwebPlugin } from '@qualweb/core';
+import { QualwebOptions, Evaluations, PuppeteerPlugins, ClusterOptions, LoadEvent, QualwebPlugin, QualWebStartOptions } from '@qualweb/core';
 import { generateEARLReport } from '@qualweb/earl-reporter';
 import { Dom } from '@qualweb/dom';
 import { Evaluation } from '@qualweb/evaluation';
@@ -13,26 +13,6 @@ import { readFile, writeFile, unlink } from 'fs';
 import path from 'path';
 import 'colors';
 import { CMPManager, SimpleCMPDescriptor } from '@inqludeit/cmp-b-gone';
-
-/**
- * Additional options that can be passed to {@link QualWeb.start}.
- */
-export interface QualWebStartOptions {
-  /**
-   * If true, a default CMPManager from cmp-b-gone will be instantiate with all
-   * currently known CMP descriptors. cmp-b-gone has a large (but not
-   * comprehensive) collection of konwn descriptors that may catch cookie
-   * banners on pages you are loading.
-   * If you need to add specific descriptors not present in the default
-   * collection, consider either using cmp-b-gone directly or add specific CMP
-   * details in your call to {@link QualWeb.evaluate}.
-   * 
-   * Note that using all built in descriptors is *much* slower than specifying
-   * them in {@link QualWeb.evaluate} because the correct descriptor has to be
-   * identified.
-   */
-  useBuiltInCmpSuppression?: boolean,
-}
 
 /**
  * QualWeb engine - Performs web accessibility evaluations using several modules:
@@ -159,14 +139,14 @@ class QualWeb {
 
     let cmpManager: CMPManager | null = null;
 
-    if (this.cmpManager || options.cmpDescriptors?.length > 0) {
-      const cmpManager = this.cmpManager || await CMPManager.createManager(undefined, false);
+    if (this.cmpManager || options.cmpDescriptors) {
+      cmpManager = this.cmpManager || await CMPManager.createManager(undefined, false);
 
       // If the caller added temporary descriptors via options, add them to the
       // CMPManager instance. We give them some names that are unlikely to
       // clash with others already present, and so they can be removed after
       // evaluation has run.
-      if (options.cmpDescriptors?.length > 0) {
+      if (options.cmpDescriptors) {
         let descriptorNameCounter = 0;
 
         for (const tmpDescriptor of options.cmpDescriptors) {
