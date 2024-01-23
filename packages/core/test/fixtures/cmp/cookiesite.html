@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <!--
+    Example of a site with a regular, instantly displayed cookie banner.
+    The cookie banner should be detected by the CMP descriptor called
+    "brainsum/cookieconsent" in cmp-b-gone.
+  -->
+<head>
+</head>
+
+<body>
+  <div id="cconsent-modal">
+    <div id="cookie-banner-explanation">
+
+    </div>
+    <div id="cookie-banner-actions">
+      <button id="cookie-banner-accept-all" class="consent-give">Accept all</button>
+      <button id="cookie-banner-accept-necessary">Accept necessary</button>
+      <button id="cookie-banner-reject-all">Reject all</button>
+    </div>
+  </div>
+  <div>
+    <button onclick="alert(`cookies: ${document.cookie}`)">Alert cookies</button>
+    <button id="delete-cookies">Delete cookies</button>
+  </div>
+  <script type="text/javascript">
+    const bannerId = 'cconsent-modal';
+    const consentCookie = 'cookieconsent-given';
+    const consentCookieData = 'cookieconsent-data';
+
+    function saveCookie(name, value, expires) {
+      document.cookie = `${name}=${value}; SameSite=Lax; expires=${expires || 'Thu, 01 Jan 1970'}; path=/;`;
+    }
+
+    function deleteCookie(name) {
+      document.cookie = `${name}=; SameSite=Lax; expires=${new Date(Date.now() - 5000).toUTCString()}; path=/;`;
+    }
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+      if (document.cookie.includes('cookieconsent-given=true') === true) {
+        document.getElementById(bannerId).remove();
+      } else {
+
+        document.getElementById('cookie-banner-accept-all').addEventListener('click', () => {
+          console.info('Storing a cookie');
+
+          saveCookie(consentCookie, 'true');
+          saveCookie(consentCookieData, 'all');
+
+          console.info(`Cookies: ${document.cookie}`);
+
+          document.getElementById(bannerId).style.visibility = 'hidden';
+        });
+
+        document.getElementById('cookie-banner-accept-necessary').addEventListener('click', () => {
+          console.info('Storing a cookie');
+
+          saveCookie(consentCookie, 'true');
+          saveCookie(consentCookieData, 'functional');
+
+          console.info(`Cookies: ${document.cookie}`);
+
+          document.getElementById(bannerId).style.visibility = 'hidden';
+        });
+
+        document.getElementById('cookie-banner-reject-all').addEventListener('click', () => {
+          console.info('Storing a cookie');
+
+          saveCookie(consentCookie, 'true');
+          saveCookie(consentCookieData, 'none');
+
+          console.info(`Cookies: ${document.cookie}`);
+
+          document.getElementById(bannerId).style.visibility = 'hidden';
+        });
+      }
+
+      document.getElementById('delete-cookies').addEventListener('click', () => {
+        deleteCookie(consentCookie);
+        deleteCookie(consentCookieData);
+
+        alert(document.cookie);
+      });
+    });
+  </script>
+</body>
+</html>
