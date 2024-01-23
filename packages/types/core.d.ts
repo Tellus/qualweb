@@ -15,7 +15,7 @@ declare module "@qualweb/core" {
   } from "puppeteer";
   import { CounterReport } from "@qualweb/counter";
   import { Locale, Lang, TranslationObject } from "@qualweb/locale";
-  import { SimpleCMPDescriptor, CookieConsentStorageOptions, LocalStorageConsentStorageOptions } from '@inqludeit/cmp-b-gone';
+  import { SimpleCMPDescriptor, CookieConsentStorageOptions, LocalStorageConsentStorageOptions, CMPManager } from '@inqludeit/cmp-b-gone';
 
   interface Execute {
     wappalyzer?: boolean;
@@ -66,18 +66,22 @@ declare module "@qualweb/core" {
      * If true, a default CMPManager from cmp-b-gone will be instantiate with all
      * currently known CMP descriptors. cmp-b-gone has a large (but not
      * comprehensive) collection of konwn descriptors that may catch cookie
-     * banners on pages you are loading.
-     * If you need to add specific descriptors not present in the default
-     * collection, consider either using cmp-b-gone directly or add specific CMP
-     * details in your call to {@link QualWeb.evaluate}.
-     * 
-     * Note that using all built in descriptors is *much* slower than specifying
-     * them in {@link QualWeb.evaluate} because the correct descriptor has to be
+     * banners on pages you are loading. Note that using all built in
+     * descriptors is *much* slower than specifying them in
+     * {@link QualWeb.evaluate} because the correct descriptor has to be
      * identified.
+     *
+     * Alternatively, you can pass in a CMPManager instance of your own which
+     * will be used for all evaluations. This gives you more direct control over
+     * the CMP descriptors being used.
+     *
+     * Alternatively, pass specific CMP details in your call to
+     * {@link QualWeb.evaluate} to use descriptors only for the duration of that
+     * call.
      */
-    useBuiltInCmpSuppression?: boolean,
+    cmpManager?: boolean | CMPManager,
   }
-  
+
   interface QualwebOptions {
     url?: string;
     urls?: string[];

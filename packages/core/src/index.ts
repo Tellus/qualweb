@@ -3,7 +3,15 @@ import puppeteer from 'puppeteer-extra';
 import { Cluster } from 'puppeteer-cluster';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import AdBlocker from 'puppeteer-extra-plugin-adblocker';
-import { QualwebOptions, Evaluations, PuppeteerPlugins, ClusterOptions, LoadEvent, QualwebPlugin, QualWebStartOptions } from '@qualweb/core';
+import {
+  QualwebOptions,
+  Evaluations,
+  PuppeteerPlugins,
+  ClusterOptions,
+  LoadEvent,
+  QualwebPlugin,
+  QualWebStartOptions
+} from '@qualweb/core';
 import { generateEARLReport } from '@qualweb/earl-reporter';
 import { Dom } from '@qualweb/dom';
 import { Evaluation } from '@qualweb/evaluation';
@@ -56,7 +64,7 @@ class QualWeb {
   public async start(
     clusterOptions?: ClusterOptions,
     puppeteerOptions?: LaunchOptions & BrowserLaunchArgumentOptions & BrowserConnectOptions,
-    additionalOptions?: QualWebStartOptions,
+    additionalOptions?: QualWebStartOptions
   ): Promise<void> {
     this.cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
@@ -67,9 +75,12 @@ class QualWeb {
       monitor: clusterOptions?.monitor ?? false
     });
 
-    // If requested, set up a CMPManager using all built-in descriptors.
-    if (additionalOptions?.useBuiltInCmpSuppression === true) {
+    if (additionalOptions?.cmpManager === true) {
+      // Set up a CMPManager with all built-ins.
       this.cmpManager = await CMPManager.createManager(undefined, true);
+    } else if (additionalOptions?.cmpManager) {
+      // Use the provided CMPManager.
+      this.cmpManager = additionalOptions.cmpManager;
     }
   }
 
@@ -130,7 +141,7 @@ class QualWeb {
     // Array of descriptor names. We use this to keep track of the temporary
     // descriptors we may have created, so they can be removed again after
     // evaluation.
-    let tmpDescriptorNames: string[] = [];
+    const tmpDescriptorNames: string[] = [];
 
     // Local reference to whichever CMPManager should be used during evaluation.
     // This will either be the QualWeb object's version (which persists between
@@ -140,7 +151,7 @@ class QualWeb {
     let cmpManager: CMPManager | null = null;
 
     if (this.cmpManager || options.cmpDescriptors) {
-      cmpManager = this.cmpManager || await CMPManager.createManager(undefined, false);
+      cmpManager = this.cmpManager || (await CMPManager.createManager(undefined, false));
 
       // If the caller added temporary descriptors via options, add them to the
       // CMPManager instance. We give them some names that are unlikely to
@@ -157,8 +168,8 @@ class QualWeb {
               tmpDescriptorName,
               tmpDescriptor.storageOptions,
               tmpDescriptor.presenceSelectors,
-              tmpDescriptor.acceptAllSelectors,
-            ),
+              tmpDescriptor.acceptAllSelectors
+            )
           ]);
 
           tmpDescriptorNames.push(tmpDescriptorName);
@@ -204,7 +215,7 @@ class QualWeb {
       // descriptors we want to run.
       if (cmpManager !== null) {
         await cmpManager.parsePage(page, {
-          failOnMissing: true,
+          failOnMissing: true
         });
       }
 
