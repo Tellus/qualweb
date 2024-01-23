@@ -216,13 +216,16 @@ class QualWeb {
       const { sourceHtml, validation } = await dom.process(options, url ?? '', html ?? '');
       const evaluation = new Evaluation(url, page, modulesToExecute);
 
-      // Run built-in CMP dismissal before any other plugin.
-      // If cmpManager is defined (not null), it's because we set up some
-      // descriptors we want to run.
-      if (cmpManager !== null) {
-        await cmpManager.parsePage(page, {
-          failOnMissing: true
-        });
+      // Run built-in CMP dismissal before any other plugin. We only run this
+      // if the CMPManager has been set *and* actually defines some descriptors.
+      // We should really have a good way to warn the user if there are no
+      // descriptors, but a defined manager. Useful diagnostic info.
+      if (cmpManager !== null && cmpManager.descriptorNames.length > 0) {
+        const cmpData = await cmpManager.parsePage(page);
+
+        if (cmpData === null) {
+          throw new Error('No CMP was detected!');
+        }
       }
 
       // Execute afterPageLoad on all plugins in order. Same assumptions for
