@@ -111,10 +111,9 @@ declare module "@qualweb/core" {
     "act-rules"?: ACTROptions;
     "wcag-techniques"?: WCAGOptions;
     "best-practices"?: BPOptions;
-    cmpDescriptors?: (Pick<
-      SimpleCMPDescriptor,
-      'acceptAllSelectors' | 'consentKeys' | 'presenceSelectors' | 'cmpTimeout'
-    > & { storageOptions: LocalStorageConsentStorageOptions | CookieConsentStorageOptions })[];
+    cmpDescriptors?: (Pick<SimpleCMPDescriptor, 'acceptAllSelectors' | 'presenceSelectors'> & {
+      storageOptions: LocalStorageConsentStorageOptions | CookieConsentStorageOptions;
+    } & Partial<Pick<SimpleCMPDescriptor, 'cmpTimeout'>>)[];
   }
 
   interface Evaluator {
