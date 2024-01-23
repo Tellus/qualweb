@@ -64,7 +64,12 @@ declare module "@qualweb/core" {
   export interface QualWebStartOptions {
     /**
      * If true, a default CMPManager from cmp-b-gone will be instantiate with all
-     * currently known CMP descriptors. cmp-b-gone has a large (but not
+     * currently known CMP descriptors.
+     *
+     * If a CMPManager is in use during {@link QualWeb.evaluate}, no report is
+     * generated for a URL if a CMP could not be detected on it.
+     *
+     * cmp-b-gone has a large (but not
      * comprehensive) collection of konwn descriptors that may catch cookie
      * banners on pages you are loading. Note that using all built in
      * descriptors is *much* slower than specifying them in
