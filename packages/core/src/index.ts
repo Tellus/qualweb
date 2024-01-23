@@ -151,7 +151,13 @@ class QualWeb {
     let cmpManager: CMPManager | null = null;
 
     if (this.cmpManager || options.cmpDescriptors) {
-      cmpManager = this.cmpManager || (await CMPManager.createManager(undefined, false));
+      if (this.cmpManager) {
+        // Re-use CMPManager set during start().
+        cmpManager = this.cmpManager;
+      } else {
+        // Create empty CMPManager for this evaluation only.
+        cmpManager = await CMPManager.createManager(undefined, false);
+      }
 
       // If the caller added temporary descriptors via options, add them to the
       // CMPManager instance. We give them some names that are unlikely to
