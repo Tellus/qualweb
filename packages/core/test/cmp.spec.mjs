@@ -195,4 +195,41 @@ describe('CMP suppression', function () {
     // failed. We're assuming it was because the CMP was not detected.
     expect(reports).to.not.have.property(url);
   });
+
+  it('Should evaluate two pages from the same domain without issue (caching test)', async () => {
+    const url = `${staticServerHost}/cookiesite.html`;
+    const url2 = `${staticServerHost}/cookiesite-2.html`;
+
+    await qw.start(undefined, { headless: 'new' }, {
+      cmpManager: await CMPManager.createManager(undefined, false),
+    });
+
+    const reports = await qw.evaluate({
+      urls: [url, url2],
+      execute: {
+        act: false,
+        bp: false,
+        counter: false,
+        wappalyzer: false,
+        wcag: false,
+      },
+      log: {
+        file: false,
+        console: true,
+      },
+      cmpDescriptors: [
+        {
+          storageOptions: {
+            cookies: ['cconsent', 'consentIDandDate']
+          },
+          presenceSelectors: ['div#bad-selector'],
+          acceptAllSelectors: ['button.bad-selector']
+        }
+      ],
+    });
+
+    // Ensure report was generated for the URL.
+    expect(reports).to.have.property(url);
+    expect(reports).to.have.property(url2);
+  });
 });
