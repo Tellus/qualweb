@@ -79,6 +79,13 @@ describe('CMP suppression', function () {
 
     const reports = await qw.evaluate({
       url,
+      execute: {
+        act: false,
+        bp: false,
+        counter: false,
+        wappalyzer: false,
+        wcag: false,
+      },
       log: {
         file: false,
         console: false,
@@ -99,6 +106,13 @@ describe('CMP suppression', function () {
 
     const reports = await qw.evaluate({
       url,
+      execute: {
+        act: false,
+        bp: false,
+        counter: false,
+        wappalyzer: false,
+        wcag: false,
+      },
       log: {
         file: false,
         console: false,
@@ -107,6 +121,42 @@ describe('CMP suppression', function () {
 
     // Ensure report was generated for the URL. This means that the CMP was
     // correctly suppressed.
+    expect(reports).to.have.property(url);
+  });
+
+  it('Should correctly evaluate a page with a CMP if a descriptor is passed to evaluate()', async () => {
+    const url = `${staticServerHost}/cookiesite.html`;
+
+    await qw.start(undefined, { headless: 'new' }, {
+      cmpManager: await CMPManager.createManager(undefined, false),
+    });
+
+    const reports = await qw.evaluate({
+      url,
+      execute: {
+        act: false,
+        bp: false,
+        counter: false,
+        wappalyzer: false,
+        wcag: false,
+      },
+      log: {
+        file: false,
+        console: false,
+      },
+      cmpDescriptors: [
+        {
+          storageOptions: {
+            cookies: ['cconsent', 'consentIDandDate']
+          },
+          presenceSelectors: ['div#cconsent-modal'],
+          acceptAllSelectors: ['button.consent-give']
+        }
+      ],
+    });
+
+    // Ensure report was NOT generated for the URL. This means that evaluation
+    // failed. We're assuming it was because the CMP was not detected.
     expect(reports).to.have.property(url);
   });
 
@@ -119,6 +169,13 @@ describe('CMP suppression', function () {
 
     const reports = await qw.evaluate({
       url,
+      execute: {
+        act: false,
+        bp: false,
+        counter: false,
+        wappalyzer: false,
+        wcag: false,
+      },
       log: {
         file: false,
         console: false,
