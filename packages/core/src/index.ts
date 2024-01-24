@@ -20,7 +20,7 @@ import locales, { Lang, Locale, TranslationObject } from '@qualweb/locale';
 import { readFile, writeFile, unlink } from 'fs';
 import path from 'path';
 import 'colors';
-import { CMPManager, SimpleCMPDescriptor } from '@inqludeit/cmp-b-gone';
+import { CMPDescriptor, CMPManager, DescriptorConsentData, SimpleCMPDescriptor } from '@inqludeit/cmp-b-gone';
 
 /**
  * QualWeb engine - Performs web accessibility evaluations using several modules:
@@ -40,6 +40,16 @@ class QualWeb {
   private qualwebPlugins: QualwebPlugin[] = [];
 
   private cmpManager?: CMPManager;
+
+  /**
+   * A cache of descriptors that ties a domain (the key) to whichever CMP was
+   * detected the last time that domain was visisted. This is necessary because
+   * subsequent visits to the same domain shouldn't show the cookie banner/popup
+   * - this cache helps recognize those cases. A secondary feature is that this
+   * drastically reduces processing time of pages because the CMPManager doesn't
+   * need to go through its entire database of descriptors to find a match.
+   */
+  private readonly descriptorCache: Record<string, DescriptorConsentData> = {};
 
   /**
    * Initializes puppeteer with given plugins.
@@ -221,10 +231,31 @@ class QualWeb {
       // We should really have a good way to warn the user if there are no
       // descriptors, but a defined manager. Useful diagnostic info.
       if (cmpManager !== null && cmpManager.descriptorNames.length > 0) {
-        const cmpData = await cmpManager.parsePage(page);
+        const hostname = new URL(url).hostname;
+
+        const previousDescriptor = this.descriptorCache[hostname];
+
+        // Delete any cookies previously
+        if (previousDescriptor?.cookies) {
+          page.deleteCookie(...previousDescriptor.cookies);
+        }
+
+        const cmpData = await cmpManager.parsePage(page, {
+          // If a pervious descriptor was used for this domain, use it for this
+          // pass.
+          descriptor: previousDescriptor.descriptor
+        });
 
         if (cmpData === null) {
-          throw new Error('No CMP was detected!');
+          if (previousDescriptor) {
+            // No CMP was detected, but we assume it was suppressed due to prior
+            // visits.
+          } else {
+            throw new Error('No CMP was detected!');
+          }
+        } else {
+          // Store the detected descriptor for later visits.
+          this.descriptorCache[hostname] = cmpData;
         }
       }
 
@@ -256,6 +287,8 @@ class QualWeb {
     if (cmpManager !== null && tmpDescriptorNames.length > 0) {
       for (const tmpDescriptorName of tmpDescriptorNames) {
         cmpManager.removeDescriptor(tmpDescriptorName);
+        // Purge the descriptor cache of temporary descriptors.
+        delete this.descriptorCache[tmpDescriptorName];
       }
     }
 
