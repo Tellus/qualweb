@@ -12,9 +12,9 @@ export async function setupStaticServer(path) {
   return new Promise((resolve, reject) => {
     try {
       const app = new express();
-    
+
       app.use(express.static(path));
-  
+
       app.listen(process.env.EXPRESS_PORT, function () {
         resolve(this);
       });
@@ -177,8 +177,8 @@ describe('CMP suppression', function () {
         wcag: false,
       },
       log: {
-        file: false,
-        console: false,
+        file: true,
+        console: true,
       },
       cmpDescriptors: [
         {
@@ -190,6 +190,8 @@ describe('CMP suppression', function () {
         }
       ],
     });
+
+    console.debug(Object.keys(reports));
 
     // Ensure report was NOT generated for the URL. This means that evaluation
     // failed. We're assuming it was because the CMP was not detected.
@@ -222,8 +224,8 @@ describe('CMP suppression', function () {
           storageOptions: {
             cookies: ['cconsent', 'consentIDandDate']
           },
-          presenceSelectors: ['div#bad-selector'],
-          acceptAllSelectors: ['button.bad-selector']
+          presenceSelectors: ['div#cconsent-modal'],
+          acceptAllSelectors: ['button.consent-give']
         }
       ],
     });
