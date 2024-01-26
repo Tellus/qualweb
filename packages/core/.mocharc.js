@@ -1,7 +1,7 @@
 module.exports = {
   "color": true,
   "ui": "bdd",
-  // "spec": "test/**/*.spec.mjs",
+  "spec": "test/**/*.spec.mjs",
   // "spec": "test/**/*.spec.ts",
   // "require": [
   //   // "tsconfig-paths/register",
