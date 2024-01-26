@@ -70,6 +70,9 @@ describe('CMP suppression', function () {
     qw = null;
   });
 
+  // This test is a bit fragile. It depends on the cookie banner in
+  // cookiesite.html matching with the "brainsum/cookieconsent" descriptor in
+  // cmp-b-gone.
   it('Should correctly detect a CMP defined in the built-in collection', async () => {
     const url = `${staticServerHost}/cookiesite.html`;
 
