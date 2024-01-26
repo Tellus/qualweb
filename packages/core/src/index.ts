@@ -42,6 +42,11 @@ class QualWeb {
   private cmpManager?: CMPManager;
 
   /**
+   * Prefix used for temporary descriptors added in calls to {@link evaluate()}.
+   */
+  private readonly cmpTmpDescriptorPrefix: string = '__TMP_DESCRIPTOR_';
+
+  /**
    * A cache of descriptors that ties a domain (the key) to whichever CMP was
    * detected the last time that domain was visisted. This is necessary because
    * subsequent visits to the same domain probably won't show the CMP banner,
@@ -189,7 +194,7 @@ class QualWeb {
         let descriptorNameCounter = 0;
 
         for (const tmpDescriptor of options.cmpDescriptors) {
-          const tmpDescriptorName = `__TMP_DESCRIPTOR_${descriptorNameCounter++}`;
+          const tmpDescriptorName = `${this.cmpTmpDescriptorPrefix}${descriptorNameCounter++}`;
 
           cmpManager.addDescriptors([
             new SimpleCMPDescriptor(
@@ -242,10 +247,15 @@ class QualWeb {
       // if the CMPManager has been set *and* actually defines some descriptors.
       // We should really have a good way to warn the user if there are no
       // descriptors, but a defined manager. Useful diagnostic info.
-      if (cmpManager !== null && cmpManager.descriptorNames.length > 0) {
-        const urlhost = new URL(url).host;
 
-        const previousDescriptor = this.descriptorCache[urlhost];
+      // Tracks if we successfully suppressed a CMP. The value is used on the
+      // other side of the evaluation, so the variable must be declared here.
+      let cmpData: DescriptorConsentData | null = null;
+
+      if (cmpManager !== null && cmpManager.descriptorNames.length > 0) {
+        const urlHost = new URL(url).host;
+
+        const previousDescriptor = this.descriptorCache[urlHost];
 
         const parsePageOpts: ParsePageOptions = {};
 
@@ -255,7 +265,7 @@ class QualWeb {
           parsePageOpts.descriptor = previousDescriptor.descriptor;
         }
 
-        const cmpData = await cmpManager.parsePage(page, parsePageOpts);
+        cmpData = await cmpManager.parsePage(page, parsePageOpts);
 
         if (cmpData === null) {
           if (previousDescriptor) {
@@ -279,10 +289,14 @@ class QualWeb {
             throw new Error('No CMP was detected!');
           }
         } else if (!previousDescriptor) {
-          // console.debug(`Saving descriptor ${cmpData.descriptor} for future visits to ${urlhost}`);
-
-          // Store the detected descriptor for later visits.
-          this.descriptorCache[urlhost] = cmpData;
+          if (cmpData.descriptor.startsWith(this.cmpTmpDescriptorPrefix) === false) {
+            // console.debug(`Saving descriptor ${cmpData.descriptor} for future visits to ${urlHost}`);
+  
+            // Store the detected descriptor for later visits.
+            this.descriptorCache[urlHost] = cmpData;
+          } else {
+            // console.debug(`Skipping caching for temporary descriptor  ${cmpData.descriptor} on URL ${urlHost}`);
+          }
         }
       }
 
@@ -295,6 +309,18 @@ class QualWeb {
       }
 
       const evaluationReport = await evaluation.evaluatePage(sourceHtml, options, validation);
+
+      // Try to remove cookies if a temporary descriptor was used.
+      if (cmpData?.descriptor.startsWith(this.cmpTmpDescriptorPrefix)) {
+        if (cmpData.cookies) {
+          // console.debug(`Removing cookie data for temporary descriptor ${cmpData.descriptor}`);
+  
+          page.deleteCookie(...cmpData.cookies);
+        } else if (cmpData.localStorage) {
+          // localStorage is not supported!
+        }
+      }
+
       evaluations[url || 'customHtml'] = evaluationReport.getFinalReport();
     });
 
