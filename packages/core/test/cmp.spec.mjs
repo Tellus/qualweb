@@ -237,4 +237,60 @@ describe('CMP suppression', function () {
     expect(reports).to.have.property(url);
     expect(reports).to.have.property(url2);
   });
+
+  it('Should suppress the CMP on first visit to a URL with descriptor, but not on second visit without one', async () => {
+    // I have no idea how to test this externall.
+
+    const url = `${staticServerHost}/cookiesite.html`;
+
+    await qw.start(undefined, { headless: 'new' }, {
+      cmpManager: await CMPManager.createManager(undefined, false),
+    });
+
+    const evaluationOptions = {
+      urls: [url],
+      execute: {
+        act: false,
+        bp: false,
+        counter: false,
+        wappalyzer: false,
+        wcag: false,
+      },
+      log: {
+        file: false,
+        console: true,
+      },
+    };
+
+    // First pass expects the banner to be suppressed.
+    const reportsWithoutBanner = await qw.evaluate({
+      ...evaluationOptions,
+      cmpDescriptors: [
+        {
+          storageOptions: {
+            cookies: ['cconsent', 'consentIDandDate']
+          },
+          presenceSelectors: ['div#cconsent-modal'],
+          acceptAllSelectors: ['button.consent-give']
+        }
+      ],
+    });
+
+    // Second pass expects the banner to be present again.
+    const reportsWithBanner = await qw.evaluate({
+      ...evaluationOptions,
+    });
+
+    // Ensure report was generated for the URL in both cases.
+    expect(reportsWithBanner).to.have.property(url);
+    expect(reportsWithoutBanner).to.have.property(url);
+
+    // We expect the cookie banner to be hidden in the report with no banner.
+    expect(reportsWithoutBanner[url].system.page.dom.html).to.contain('<div id="cconsent-modal" style="visibility: hidden;">');
+    expect(reportsWithoutBanner[url].system.page.dom.html).to.not.contain('<div id="cconsent-modal">');
+    
+    // Conversely, we expect the cookie banner element to NOT be hidden in the variant with the banner.
+    expect(reportsWithBanner[url].system.page.dom.html).to.contain('<div id="cconsent-modal">');
+    expect(reportsWithBanner[url].system.page.dom.html).to.not.contain('<div id="cconsent-modal" style="visibility: hidden;">');
+  });
 });
