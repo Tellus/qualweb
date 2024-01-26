@@ -20,7 +20,7 @@ import locales, { Lang, Locale, TranslationObject } from '@qualweb/locale';
 import { readFile, writeFile, unlink } from 'fs';
 import path from 'path';
 import 'colors';
-import { CMPManager, DescriptorConsentData, SimpleCMPDescriptor } from '@inqludeit/cmp-b-gone';
+import { CMPManager, DescriptorConsentData, ParsePageOptions, SimpleCMPDescriptor } from '@inqludeit/cmp-b-gone';
 
 /**
  * QualWeb engine - Performs web accessibility evaluations using several modules:
@@ -44,12 +44,11 @@ class QualWeb {
   /**
    * A cache of descriptors that ties a domain (the key) to whichever CMP was
    * detected the last time that domain was visisted. This is necessary because
-   * subsequent visits to the same domain shouldn't show the cookie banner/popup
-   * - this cache helps recognize those cases. A secondary feature is that this
-   * drastically reduces processing time of pages because the CMPManager doesn't
-   * need to go through its entire database of descriptors to find a match.
+   * subsequent visits to the same domain probably won't show the CMP banner,
+   * due to the presence of previously stored cookies. This cache helps
+   * recognize those cases.
    */
-  private readonly descriptorCache: Record<string, DescriptorConsentData> = {};
+  private descriptorCache: Record<string, DescriptorConsentData> = {};
 
   /**
    * Initializes puppeteer with given plugins.
@@ -91,6 +90,15 @@ class QualWeb {
     } else if (additionalOptions?.cmpManager) {
       // Use the provided CMPManager.
       this.cmpManager = additionalOptions.cmpManager;
+    }
+
+    // If we're using CMP suppression, initialize/reset the internal descriptor
+    // cache. Generally speaking, the cache should be cleared every time the
+    // Chrome instance starts with an empty cache, to fit.
+    // The goal is to be able to ask the question "in this session, have we
+    // previously encountered and successfully suppressed a CMP on this domain?"
+    if (this.cmpManager) {
+      this.descriptorCache = {};
     }
   }
 
@@ -149,8 +157,8 @@ class QualWeb {
     // create an ad hoc instance or use the one already in this QualWeb object.
 
     // Array of descriptor names. We use this to keep track of the temporary
-    // descriptors we may have created, so they can be removed again after
-    // evaluation.
+    // descriptors we may have created (passed via options), so they can be
+    // removed again after evaluation.
     const tmpDescriptorNames: string[] = [];
 
     // Local reference to whichever CMPManager should be used during evaluation.
@@ -164,6 +172,10 @@ class QualWeb {
       if (this.cmpManager) {
         // Re-use CMPManager set during start().
         cmpManager = this.cmpManager;
+
+        // if (cmpManager.descriptorNames.length === 0) {
+        //   console.warn('CMPManager has no descriptors for evaluation. Was this intentional?');
+        // }
       } else {
         // Create empty CMPManager for this evaluation only.
         cmpManager = await CMPManager.createManager(undefined, false);
@@ -231,19 +243,19 @@ class QualWeb {
       // We should really have a good way to warn the user if there are no
       // descriptors, but a defined manager. Useful diagnostic info.
       if (cmpManager !== null && cmpManager.descriptorNames.length > 0) {
-        const hostname = new URL(url).hostname;
+        const urlhost = new URL(url).host;
 
-        const previousDescriptor = this.descriptorCache[hostname];
+        const previousDescriptor = this.descriptorCache[urlhost];
+
+        const parsePageOpts: ParsePageOptions = {};
 
         if (previousDescriptor) {
-          console.debug(`Re-using descriptor for host ${hostname}`);
+          // console.debug(`Re-using descriptor ${previousDescriptor.descriptor} for host ${urlhost}`);
+
+          parsePageOpts.descriptor = previousDescriptor.descriptor;
         }
 
-        const cmpData = await cmpManager.parsePage(page, {
-          // If a pervious descriptor was used for this domain, use it for this
-          // pass.
-          descriptor: previousDescriptor?.descriptor
-        });
+        const cmpData = await cmpManager.parsePage(page, parsePageOpts);
 
         if (cmpData === null) {
           if (previousDescriptor) {
@@ -260,13 +272,17 @@ class QualWeb {
 
             if (consentData.length === 0) {
               throw new Error(`No CMP was detected on page and cache has no consent data.`);
+            } else {
+              // console.debug(`Previous descriptor for ${urlhost} was used and no CMP was detected. ASSUME successful suppression.`);
             }
           } else {
             throw new Error('No CMP was detected!');
           }
-        } else {
+        } else if (!previousDescriptor) {
+          // console.debug(`Saving descriptor ${cmpData.descriptor} for future visits to ${urlhost}`);
+
           // Store the detected descriptor for later visits.
-          this.descriptorCache[hostname] = cmpData;
+          this.descriptorCache[urlhost] = cmpData;
         }
       }
 
