@@ -19,10 +19,8 @@ describe('testHasTheSameColorOfBackground', () => {
     const qwElement = new QWElement(htmlElement);
 
     sinon.stub(qwElement, 'getElementStyleProperty')
-      .withArgs('color', '')
-      .returns('#000000')
-      .withArgs('background-color', '')
-      .returns('#000000')
+      .withArgs('color', '').returns('#000000')
+      .withArgs('background-color', '').returns('#000000')
       ;
     sinon.stub(qwElement, 'getElementText')
       .returns('Sample text');
@@ -37,10 +35,8 @@ describe('testHasTheSameColorOfBackground', () => {
 
     const qwElement = new QWElement(htmlElement);
     sinon.stub(qwElement, 'getElementStyleProperty')
-      .withArgs('color', '')
-      .returns('#000000')
-      .withArgs('background-color', '')
-      .returns('#FFFFFF')
+      .withArgs('color', '').returns('#000000')
+      .withArgs('background-color', '').returns('#FFFFFF')
       ;
     sinon.stub(qwElement, 'getElementText')
       .returns('Sample text');
@@ -56,10 +52,8 @@ describe('testHasTheSameColorOfBackground', () => {
     const qwElement = new QWElement(htmlElement);
 
     sinon.stub(qwElement, 'getElementStyleProperty')
-      .withArgs('color', '')
-      .returns('#000000')
-      .withArgs('background-color', '')
-      .returns('#000000')
+      .withArgs('color', '').returns('#000000')
+      .withArgs('background-color', '').returns('#000000')
       ;
     sinon.stub(qwElement, 'getElementText')
       .returns('');

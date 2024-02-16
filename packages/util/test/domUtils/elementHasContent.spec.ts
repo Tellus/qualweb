@@ -121,10 +121,8 @@ describe('elementHasContent', () => {
       const element = new QWElement(htmlElement);
 
       sinon.stub(element, 'getElementStyleProperty')
-        .withArgs('color')
-        .returns('#000000')
-        .withArgs('background-color')
-        .returns('#FFFFFF')
+        .withArgs('color').returns('#000000')
+        .withArgs('background-color').returns('#FFFFFF')
         ;
 
       sinon.stub(element, 'getElementText').returns('Sample text');
@@ -137,10 +135,8 @@ describe('elementHasContent', () => {
       const element = new QWElement(htmlElement);
 
       sinon.stub(element, 'getElementStyleProperty')
-        .withArgs('color')
-        .returns('#000000')
-        .withArgs('background-color')
-        .returns('#000000')
+        .withArgs('color').returns('#000000')
+        .withArgs('background-color').returns('#000000')
         ;
 
       sinon.stub(element, 'getElementText').returns('Sample text');
@@ -153,10 +149,8 @@ describe('elementHasContent', () => {
       const element = new QWElement(htmlElement);
 
       sinon.stub(element, 'getElementStyleProperty')
-        .withArgs('color')
-        .returns('#000000')
-        .withArgs('background-color')
-        .returns('#000000')
+        .withArgs('color').returns('#000000')
+        .withArgs('background-color').returns('#000000')
         ;
 
       sinon.stub(element, 'getElementText').returns('');
@@ -175,16 +169,12 @@ describe('elementHasContent', () => {
 
       // Required because of final branch that uses textHasTheSameColorOfBackground.
       sinon.stub(element, 'getElementStyleProperty')
-        .withArgs('color')
-        .returns('#000000')
-        .withArgs('background-color')
-        .returns('#000000')
+        .withArgs('color').returns('#000000')
+        .withArgs('background-color').returns('#000000')
         ;
       sinon.stub(elementChild, 'getElementStyleProperty')
-        .withArgs('color')
-        .returns('#000000')
-        .withArgs('background-color')
-        .returns('#FFFFFF')
+        .withArgs('color').returns('#000000')
+        .withArgs('background-color').returns('#FFFFFF')
         ;
 
       // Make sure getElementChildren on the outer element just returns the child we defined.
@@ -205,17 +195,13 @@ describe('elementHasContent', () => {
 
       // Required because of final branch that uses textHasTheSameColorOfBackground.
       sinon.stub(element, 'getElementStyleProperty')
-        .withArgs('color')
-        .returns('#000000')
-        .withArgs('background-color')
-        .returns('#000000')
+        .withArgs('color').returns('#000000')
+        .withArgs('background-color').returns('#000000')
         ;
       // this stub should be unnecessary, because we're trying to stub the recursive call.
       sinon.stub(elementChild, 'getElementStyleProperty')
-        .withArgs('color')
-        .returns('#000000')
-        .withArgs('background-color')
-        .returns('#000000')
+        .withArgs('color').returns('#000000')
+        .withArgs('background-color').returns('#000000')
         ;
 
       // Make sure getElementChildren on the outer element just returns the child we defined.
