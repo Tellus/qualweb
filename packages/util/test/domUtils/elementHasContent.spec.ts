@@ -159,6 +159,20 @@ describe('elementHasContent', () => {
     });
   });
 
+  /**
+   * These tests need to test elementHasContent's recursive behaviour, when
+   * checking child elements. With the current coding style (default exporting
+   * a function), we can't stub the funtion in a way that captures the recursive
+   * call. This CAN be done if the function is bound to a variable, and that
+   * variable is exported by name:
+   * 
+   * export const myFunction = function (args) { ... }
+   * 
+   * I don't like exporting as a variable rather than a function.
+   * 
+   * Instead, these tests allow the recursion to happen as normal, but stubs a
+   * child element as well, to test the first recursion level. Not ideal.
+   */
   describe('checkChildren = true', () => {
     it('true if a child has content', () => {
       // Outer element.
