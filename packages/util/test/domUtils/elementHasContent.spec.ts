@@ -8,26 +8,6 @@ import elementHasContent from '../../src/domUtils/elementHasContent';
 import * as constants from '../../src/domUtils/constants';
 
 describe('elementHasContent', () => {
-  /**
-   * parameters:
-   * - qw-element
-   * - boolean
-   * 
-   * for qw-element, uses the following methods:
-   * - getElementTagName
-   * 
-   * Matrix of results:
-   * false: if the tag type is of a non-visible type (constants.ts alwaysNotVisible)
-   * 
-   * 
-   * 
-   * 
-   * Alternative path if checkChildren = true:
-   * If any of the *children* has content, return true.
-   * 
-   * tl;dr returns true if the element or one of its children have content.
-   */
-
   let dom: JSDOM;
 
   beforeEach(() => {
