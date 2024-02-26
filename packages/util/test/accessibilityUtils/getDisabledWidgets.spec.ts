@@ -230,5 +230,18 @@ describe('getDisabledWidgets', () => {
         }
       });
     });
+
+    it('Should return nothing if element is a non-disabled widget and its parent is not a label', () => {
+      assembleTest({
+        isElementWidget: true,
+        isElementDisabled: false,
+        isElementAriaDisabled: false,
+        parent: {
+          tagType: 'div',
+          parentIsDisabled: false,
+          parentIsAriaDisabled: false,
+        }
+      });
+    });
   });
 });
